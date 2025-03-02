@@ -38,32 +38,61 @@ interface Matrix<E> {
  * height = высота, width = ширина, e = чем заполнить элементы.
  * Бросить исключение IllegalArgumentException, если height или width <= 0.
  */
-fun <E> createMatrix(height: Int, width: Int, e: E): Matrix<E> = TODO()
+fun <E> createMatrix(height: Int, width: Int, e: E): Matrix<E> {
+    if (height <= 0 || width <= 0) {
+        throw IllegalArgumentException("Negative params (height: $height, width: $width)")
+    }
+    return MatrixImpl(height, width, e)
+}
 
 /**
  * Реализация интерфейса "матрица"
  */
 
 @Suppress("EqualsOrHashCode")
-class MatrixImpl<E> : Matrix<E> {
+class MatrixImpl<E>(
+    override val height: Int,
+    override val width: Int,
+    initialValue: E
+) : Matrix<E> {
 
-    override val height: Int = TODO()
+    private val elements = MutableList(height) { MutableList(width) { initialValue } }
 
-    override val width: Int = TODO()
+    private fun checkBounds(row: Int, column: Int) {
+        if (row !in 0 until height || column !in 0 until width) {
+            throw IllegalArgumentException("Cell ($row, $column) is out of bounds (height: $height, width: $width)")
+        }
+    }
 
-    override fun get(row: Int, column: Int): E = TODO()
+    override fun get(row: Int, column: Int): E {
+        checkBounds(row, column)
+        return elements[row][column]
+    }
 
-    override fun get(cell: Cell): E = TODO()
+    override fun get(cell: Cell): E = get(cell.row, cell.column)
 
     override fun set(row: Int, column: Int, value: E) {
-        TODO()
+        checkBounds(row, column)
+        elements[row][column] = value
     }
 
-    override fun set(cell: Cell, value: E) {
-        TODO()
+    override fun set(cell: Cell, value: E) = set(cell.row, cell.column, value)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is MatrixImpl<*>) return false
+        if (height != other.height || width != other.width) return false
+        for (i in 0 until height) {
+            for (j in 0 until width) {
+                if (elements[i][j] != other.elements[i][j]) return false
+            }
+        }
+        return true
     }
 
-    override fun equals(other: Any?) = TODO()
-
-    override fun toString(): String = TODO()
+    override fun toString(): String {
+        return elements.joinToString("\n") { row ->
+            row.joinToString(" ")
+        }
+    }
 }
